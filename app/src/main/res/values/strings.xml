@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">CocktailBook</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="button_send">Send</string>
+    <string name="storage">Co mam</string>
+    <string name="book">Przepisy</string>
+    <string name="next">Dalej</string>
+    <string name="base_alcs">Alkohole podstawowe</string>
+    <string name="other_alcs">Inne alkohole / likiery</string>
+    <string name="juices">Soki</string>
+    <string name="additionals">Dodatki i dekoracje</string>
+    <string name="storage_ready">Gotowe!</string>
+</resources>
