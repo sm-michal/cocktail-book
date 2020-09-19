@@ -11,7 +11,7 @@ class StorageBaseAlcohols : AbstractStorageActivity(
 ) {
 
     fun openOtherAlcohols(view: View) {
-        startActivity(Intent(this, OtherAlcohols::class.java))
+        startActivity(Intent(this, StorageOtherAlcohols::class.java))
     }
 }
 

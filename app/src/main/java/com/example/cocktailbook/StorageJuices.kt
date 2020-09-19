@@ -8,7 +8,7 @@ import android.widget.ListView
 import com.example.cocktailbook.db.DbHelper
 import com.example.cocktailbook.db.model.IngredientType
 
-class Juices : AbstractStorageActivity(
+class StorageJuices : AbstractStorageActivity(
     R.layout.activity_juices,
     R.string.juices,
     IngredientType.JUICE

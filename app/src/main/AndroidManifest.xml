@@ -10,17 +10,22 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".RecipesList"
+            android:parentActivityName=".MainActivity">
+
+        </activity>
+        <activity
             android:name=".StorageAdditionals"
-            android:parentActivityName=".Juices">
+            android:parentActivityName=".StorageJuices">
 
         </activity>
         <activity
-            android:name=".Juices"
-            android:parentActivityName=".OtherAlcohols">
+            android:name=".StorageJuices"
+            android:parentActivityName=".StorageOtherAlcohols">
 
         </activity>
         <activity
-            android:name=".OtherAlcohols"
+            android:name=".StorageOtherAlcohols"
             android:parentActivityName=".StorageBaseAlcohols">
 
         </activity>
