@@ -11,10 +11,8 @@ abstract class AbstractStorageActivity(
     private val titleId: Int,
     private val ingredientType: IngredientType
 ) : AppCompatActivity() {
-    lateinit var lv : ListView
-    lateinit var ingredients: List<Ingredient>
-    lateinit var adapter: IngredientAdapter
-    lateinit var dbHelper: DbHelper
+    private lateinit var lv : ListView
+    private lateinit var dbHelper: DbHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,13 +24,11 @@ abstract class AbstractStorageActivity(
 
         dbHelper = DbHelper(applicationContext)
 
-        loadIngredients()
-
-        lv.adapter = IngredientAdapter(ingredients, applicationContext)
+        lv.adapter = IngredientAdapter(loadIngredients(), applicationContext)
     }
 
-    private fun loadIngredients() {
-        ingredients = dbHelper.getAllIngredientsByType(ingredientType)
+    private fun loadIngredients() =
+        dbHelper.getAllIngredientsByType(ingredientType)
             .map { it -> Ingredient(it.id, it.name, it.inStorage) }
-    }
+
 }

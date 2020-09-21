@@ -15,4 +15,8 @@ class MainActivity : AppCompatActivity() {
     fun fillStorage(view: View) {
         startActivity(Intent(this, StorageBaseAlcohols::class.java))
     }
+
+    fun showRecipes(view: View) {
+        startActivity(Intent(this, RecipesList::class.java))
+    }
 }

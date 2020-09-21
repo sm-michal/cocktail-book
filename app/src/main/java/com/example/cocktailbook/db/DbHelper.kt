@@ -10,6 +10,7 @@ import com.example.cocktailbook.db.model.IngredientType
 import com.example.cocktailbook.db.model.IngredientType.BASE_ALCOHOL
 import com.example.cocktailbook.db.model.IngredientType.JUICE
 import com.example.cocktailbook.db.model.IngredientType.ADDITIONAL
+import com.example.cocktailbook.db.model.Recipe
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
@@ -78,6 +79,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("drop table recipe_ingredients")
         db?.execSQL("drop table recipes")
+        db?.execSQL("drop table ingredients_in_storage")
         db?.execSQL("drop table ingredients")
         db?.execSQL("drop table ingredient_types")
         onCreate(db)
@@ -95,6 +97,38 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             val result = ArrayList<StorageIngredient>()
             while (!isAfterLast) {
                 result.add(StorageIngredient(getLong(0), type, getString(1), getString(2) != null))
+                moveToNext()
+            }
+            return result
+        }
+    }
+
+    fun getRecipes(): List<Recipe> {
+        with(readableDatabase.rawQuery("""
+            with available as (
+                select ri.recipe_id from recipes_ingredients ri 
+                join ingredients_in_storage si on ri.ingredient_id = si.ingredient_id
+                where not exists (
+                    select 1 from recipes_ingredients rei 
+                    where rei.recipe_id = ri.recipe_id and rei.ingredient_id not in (
+                        select ingredient_id from ingredients_in_storage
+                    ) 
+                )
+            )
+            select r.id, r.name, r.description, 
+            case when recipe_id is not null then 1 else 0 end is_available
+            from recipes r
+            left join available on r.id = available.recipe_id
+            order by is_available desc, r.name
+        """, emptyArray()
+            )
+        ) {
+
+            moveToFirst()
+
+            val result = arrayListOf<Recipe>()
+            while (!isAfterLast) {
+                result.add(Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1))
                 moveToNext()
             }
             return result

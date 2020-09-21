@@ -6,15 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import com.example.cocktailbook.db.model.Recipe
 
 
 class RecipeListAdapter(
     private val context: Context,
-    private val titles: List<String>,
-    private val contents: Map<String, List<String>>
+    private val titles: List<Recipe>
 ) : BaseExpandableListAdapter() {
 
-    override fun getGroup(groupPosition: Int): Any =
+    override fun getGroup(groupPosition: Int): Recipe =
         titles[groupPosition]
 
     override fun isChildSelectable(groupPosition: Int, childPosition: Int): Boolean =
@@ -38,18 +39,21 @@ class RecipeListAdapter(
             view = layoutInflater.inflate(R.layout.recipe_title_layout, null)
         }
 
-        val recipeTitle = convertView!!.findViewById(R.id.recipeTitle) as TextView
+        val recipeTitle = view!!.findViewById(R.id.recipeTitle) as TextView
+        val recipe = getGroup(groupPosition)
+        recipeTitle.text = recipe.name
+        if (recipe.available) {
+            recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_green_light))
+        }
 
-        recipeTitle.text = getGroup(groupPosition) as String
 
         return view!!
     }
 
-    override fun getChildrenCount(groupPosition: Int): Int =
-        contents[titles[groupPosition]]?.size ?: 0
+    override fun getChildrenCount(groupPosition: Int): Int = 1
 
-    override fun getChild(groupPosition: Int, childPosition: Int): Any =
-        contents[titles[groupPosition]]?.get(childPosition) ?: ""
+    override fun getChild(groupPosition: Int, childPosition: Int): RecipeContent =
+        getGroup(groupPosition).toRecipeContent()
 
     override fun getGroupId(groupPosition: Int): Long =
         groupPosition.toLong()
@@ -85,3 +89,23 @@ class RecipeListAdapter(
     override fun getGroupCount(): Int =
         titles.size
 }
+
+data class RecipeIngredientDto (
+    val quantity: Double,
+    val unit: String,
+    val name: String
+)
+
+
+data class RecipeContent (
+    val ingredients: List<RecipeIngredientDto>,
+    val description: String
+)
+
+fun Recipe.toRecipeContent() =
+    RecipeContent(
+        ingredients.map { it ->
+            RecipeIngredientDto(it.quantity, it.unit, it.ingredientName)
+        },
+        description
+    )
