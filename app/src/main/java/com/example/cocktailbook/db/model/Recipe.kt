@@ -5,5 +5,5 @@ data class Recipe (
     val name: String,
     val description: String,
     val available: Boolean,
-    val ingredients: List<RecipeIngredient> = arrayListOf()
+    val ingredients: MutableList<RecipeIngredient> = arrayListOf()
 )

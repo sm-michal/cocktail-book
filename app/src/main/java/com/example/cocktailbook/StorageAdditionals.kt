@@ -10,7 +10,7 @@ class StorageAdditionals : AbstractStorageActivity(
     IngredientType.ADDITIONAL
 ) {
 
-    fun home(view: View) {
-        startActivity(Intent(this, MainActivity::class.java))
+    fun showRecipes(view: View) {
+        startActivity(Intent(this, RecipesList::class.java))
     }
 }

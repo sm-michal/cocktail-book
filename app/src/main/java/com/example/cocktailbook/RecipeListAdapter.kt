@@ -4,7 +4,9 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.BaseExpandableListAdapter
+import android.widget.ListView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.cocktailbook.db.model.Recipe
@@ -73,12 +75,16 @@ class RecipeListAdapter(
             view = layoutInflater.inflate(R.layout.recipe_content_layout, null)
         }
 
-        val recipeText = convertView!!.findViewById(R.id.recipeContent) as TextView
-        recipeText.text = """
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-            Vivamus semper eu ex ut elementum. In eu quam sit amet lectus dignissim efficitur 
-            et vel tortor. Morbi ac sollicitudin eros. 
-        """
+        val recipeContent = getChild(groupPosition, childPosition)
+        val recipeText = view!!.findViewById(R.id.recipeContent) as TextView
+        recipeText.text = recipeContent.description
+
+        val ingredientList = view!!.findViewById(R.id.recipeIngredients) as ListView
+        ingredientList.layoutParams.height = recipeContent.ingredients.size * 60
+        ingredientList.adapter = ArrayAdapter<String>(context, R.layout.recipe_ingredient,
+            recipeContent.ingredients.map { it.toString() })
+
+
 
         return view!!
     }
@@ -94,11 +100,15 @@ data class RecipeIngredientDto (
     val quantity: Double,
     val unit: String,
     val name: String
-)
+) {
+    override fun toString(): String {
+        return "$quantity $unit $name"
+    }
+}
 
 
 data class RecipeContent (
-    val ingredients: List<RecipeIngredientDto>,
+    val ingredients: MutableList<RecipeIngredientDto> = arrayListOf(),
     val description: String
 )
 
@@ -106,6 +116,6 @@ fun Recipe.toRecipeContent() =
     RecipeContent(
         ingredients.map { it ->
             RecipeIngredientDto(it.quantity, it.unit, it.ingredientName)
-        },
+        }.toMutableList(),
         description
     )

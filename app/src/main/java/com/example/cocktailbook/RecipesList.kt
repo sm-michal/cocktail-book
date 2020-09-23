@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ExpandableListView
 import com.example.cocktailbook.db.DbHelper
 import com.example.cocktailbook.db.model.Recipe
+import java.util.stream.IntStream
 
 class RecipesList : AppCompatActivity() {
 
@@ -21,8 +22,11 @@ class RecipesList : AppCompatActivity() {
         dbHelper = DbHelper(applicationContext)
 
         lv.setAdapter(RecipeListAdapter(applicationContext, loadRecipes()))
-
-//        https://mauricior.github.io/android-expandablelistview/
+        lv.setOnGroupExpandListener { groupPosition ->
+            IntStream.range(0, lv.adapter.count).filter { it != groupPosition }.forEach {
+                lv.collapseGroup(it)
+            }
+        }
     }
 
     private fun loadRecipes(): List<Recipe> = dbHelper.getRecipes()

@@ -11,6 +11,7 @@ import com.example.cocktailbook.db.model.IngredientType.BASE_ALCOHOL
 import com.example.cocktailbook.db.model.IngredientType.JUICE
 import com.example.cocktailbook.db.model.IngredientType.ADDITIONAL
 import com.example.cocktailbook.db.model.Recipe
+import com.example.cocktailbook.db.model.RecipeIngredient
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
@@ -106,7 +107,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
     fun getRecipes(): List<Recipe> {
         with(readableDatabase.rawQuery("""
             with available as (
-                select ri.recipe_id from recipes_ingredients ri 
+                select distinct ri.recipe_id from recipes_ingredients ri 
                 join ingredients_in_storage si on ri.ingredient_id = si.ingredient_id
                 where not exists (
                     select 1 from recipes_ingredients rei 
@@ -128,7 +129,29 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
 
             val result = arrayListOf<Recipe>()
             while (!isAfterLast) {
-                result.add(Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1))
+                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1)
+
+                recipe.ingredients.addAll(loadRecipeIngredients(recipe.id))
+
+                result.add(recipe)
+
+                moveToNext()
+            }
+            return result
+        }
+    }
+
+    private fun loadRecipeIngredients(recipeId: Long): List<RecipeIngredient> {
+        with(readableDatabase.rawQuery("""
+            select i.id, i.name, ri.quantity, ri.unit
+            from recipes_ingredients ri join ingredients i on i.id = ri.ingredient_id
+            where ri.recipe_id = ?
+        """, arrayOf(recipeId.toString()))) {
+            moveToFirst()
+
+            val result = arrayListOf<RecipeIngredient>()
+            while (!isAfterLast) {
+                result.add(RecipeIngredient(recipeId, getLong(0), getString(1), getDouble(2), getString(3)))
                 moveToNext()
             }
             return result
@@ -211,7 +234,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             put("unit", "ml")
         })
         db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Cuba Libre", db))
+            put("recipe_id", getRecipeId("Daiquiri", db))
             put("ingredient_id", getIngredientId("Limonka", db))
             put("quantity", 1)
             put("unit", "")
