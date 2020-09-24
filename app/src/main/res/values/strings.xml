@@ -11,4 +11,6 @@
     <string name="additionals">Dodatki i dekoracje</string>
     <string name="storage_ready">Gotowe!</string>
     <string name="recipesList">Przepisy</string>
+    <string name="initDb">Odśwież bazę</string>
+    <string name="what_to_buy">Co kupić?</string>
 </resources>

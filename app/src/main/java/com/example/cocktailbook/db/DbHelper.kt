@@ -5,6 +5,8 @@ import android.content.Context
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
+import com.example.cocktailbook.Ingredient
 import com.example.cocktailbook.db.model.StorageIngredient
 import com.example.cocktailbook.db.model.IngredientType
 import com.example.cocktailbook.db.model.IngredientType.BASE_ALCOHOL
@@ -141,6 +143,42 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         }
     }
 
+    fun findMostValuableIngredientToBuy() {
+        with(readableDatabase.rawQuery("""
+            with missing as (
+                select rei.recipe_id, rei.ingredient_id from recipes_ingredients rei
+                left join ingredients_in_storage iis on iis.ingredient_id = rei.ingredient_id
+                where iis.ingredient_id is null
+            ),
+            grouped as (
+                select recipe_id, count(ingredient_id) as count_missing, group_concat(ingredient_id) as ing_ids from missing
+                group by recipe_id
+                order by 2      
+            ),
+            min_missing as (
+                select ing_ids, count(recipe_id) as avail_recipes_count, group_concat(recipe_id) as recipes from grouped 
+                where count_missing = (select min(count_missing) from grouped)
+                group by ing_ids
+                order by 2 desc
+            )
+            select ing_ids, avail_recipes_count, recipes from min_missing 
+            where avail_recipes_count = (select max(avail_recipes_count) from min_missing)
+        """, emptyArray())) {
+            moveToFirst()
+
+            while (!isAfterLast) {
+                Log.i("DBHELPER", "${getString(0)} ${getLong(1)} ${getString(2)}")
+
+                val ingNames = getString(0).split(",").map { it.toLong() }.map { getIngredientById(it) }.map { it?.name }
+                val recipeNames = getString(2).split(",").map { it.toLong() }.map { getRecipeById(it) }.map { it?.name }
+                Log.i("DBHELPER", "$ingNames $recipeNames")
+
+
+                moveToNext()
+            }
+        }
+    }
+
     private fun loadRecipeIngredients(recipeId: Long): List<RecipeIngredient> {
         with(readableDatabase.rawQuery("""
             select i.id, i.name, ri.quantity, ri.unit
@@ -156,6 +194,38 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             }
             return result
         }
+    }
+
+    private fun getRecipeById(recipeId: Long): Recipe? {
+        with(readableDatabase.query("recipes", arrayOf("id", "name", "description"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
+            moveToFirst()
+
+            return if (!isAfterLast)
+                 Recipe(getLong(0), getString(1), getString(2), false, mutableListOf())
+            else
+                null
+
+        }
+    }
+
+    private fun getIngredientById(ingredientId: Long): Ingredient? {
+        with(readableDatabase.query("ingredients", arrayOf("id", "name"), "id = ?", arrayOf(ingredientId.toString()), null, null, null)) {
+            moveToFirst()
+
+            return if (!isAfterLast)
+                Ingredient(getLong(0), getString(1), false)
+            else null
+        }
+    }
+
+    fun saveNewIngredientInStorage(ingredientId: Long) {
+        writableDatabase.insert("ingredients_in_storage", null, ContentValues().apply {
+            put("ingredient_id", ingredientId)
+        })
+    }
+
+    fun removeFromStorage(ingredientId: Long) {
+        writableDatabase.delete("ingredients_in_storage", "ingredient_id = ?", arrayOf(ingredientId.toString()))
     }
 
     private fun initData(db: SQLiteDatabase?) {
@@ -184,6 +254,18 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         })
         db?.insert("ingredients", null, ContentValues().apply {
             put("type", BASE_ALCOHOL.id)
+            put("name", "Wódka pigwowa")
+        })
+        db?.insert("ingredients", null, ContentValues().apply {
+            put("type", BASE_ALCOHOL.id)
+            put("name", "Wódka śliwkowa")
+        })
+        db?.insert("ingredients", null, ContentValues().apply {
+            put("type", BASE_ALCOHOL.id)
+            put("name", "Wódka wiśniowa")
+        })
+        db?.insert("ingredients", null, ContentValues().apply {
+            put("type", BASE_ALCOHOL.id)
             put("name", "Rum")
         })
         db?.insert("ingredients", null, ContentValues().apply {
@@ -195,9 +277,22 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             put("name", "Cola")
         })
         db?.insert("ingredients", null, ContentValues().apply {
+            put("type", JUICE.id)
+            put("name", "Tonik")
+        })
+        db?.insert("ingredients", null, ContentValues().apply {
+            put("type", JUICE.id)
+            put("name", "Sok pomarańczowy")
+        })
+        db?.insert("ingredients", null, ContentValues().apply {
             put("type", ADDITIONAL.id)
             put("name", "Limonka")
         })
+        db?.insert("ingredients", null, ContentValues().apply {
+            put("type", ADDITIONAL.id)
+            put("name", "Cytryna")
+        })
+
 
         db?.insert("recipes", null, ContentValues().apply {
             put("name", "Cuba Libre")
@@ -206,6 +301,18 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db?.insert("recipes", null, ContentValues().apply {
             put("name", "Daiquiri")
             put("description", "Do szklanicy wlewam rum i sok z limonki, wstrząsam z lodem i odcedzam do schłodzonego kieliszka")
+        })
+        db?.insert("recipes", null, ContentValues().apply {
+            put("name", "November Rain")
+            put("description", "Do szklanki wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję wódkę, lód i dopełniam colą")
+        })
+        db?.insert("recipes", null, ContentValues().apply {
+            put("name", "Łowca Androidów")
+            put("description", "Do szklanki wlewam wódkę, wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję lód i dopełniam tonikiem")
+        })
+        db?.insert("recipes", null, ContentValues().apply {
+            put("name", "Yattaman")
+            put("description", "Do szklanki wlewam wódkę, wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję lód i dopełniam colą")
         })
 
         db?.insert("recipes_ingredients", null, ContentValues().apply {
@@ -239,15 +346,70 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             put("quantity", 1)
             put("unit", "")
         })
-    }
-
-    fun saveNewIngredientInStorage(ingredientId: Long) {
-        writableDatabase.insert("ingredients_in_storage", null, ContentValues().apply {
-            put("ingredient_id", ingredientId)
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("November Rain", db))
+            put("ingredient_id", getIngredientId("Wódka wiśniowa", db))
+            put("quantity", 50)
+            put("unit", "ml")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("November Rain", db))
+            put("ingredient_id", getIngredientId("Cytryna", db))
+            put("quantity", 0.25)
+            put("unit", "")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("November Rain", db))
+            put("ingredient_id", getIngredientId("Cola", db))
+            put("quantity", 150)
+            put("unit", "ml")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Łowca Androidów", db))
+            put("ingredient_id", getIngredientId("Wódka śliwkowa", db))
+            put("quantity", 70)
+            put("unit", "ml")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Łowca Androidów", db))
+            put("ingredient_id", getIngredientId("Cytryna", db))
+            put("quantity", 0.25)
+            put("unit", "")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Łowca Androidów", db))
+            put("ingredient_id", getIngredientId("Tonik", db))
+            put("quantity", 150)
+            put("unit", "ml")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Yattaman", db))
+            put("ingredient_id", getIngredientId("Wódka pigwowa", db))
+            put("quantity", 50)
+            put("unit", "ml")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Yattaman", db))
+            put("ingredient_id", getIngredientId("Cytryna", db))
+            put("quantity", 0.25)
+            put("unit", "")
+        })
+        db?.insert("recipes_ingredients", null, ContentValues().apply {
+            put("recipe_id", getRecipeId("Yattaman", db))
+            put("ingredient_id", getIngredientId("Cola", db))
+            put("quantity", 150)
+            put("unit", "ml")
         })
     }
 
-    fun removeFromStorage(ingredientId: Long) {
-        writableDatabase.delete("ingredients_in_storage", "ingredient_id = ?", arrayOf(ingredientId.toString()))
+    fun resetDbData() {
+        val db = readableDatabase
+        db.delete("recipes_ingredients", "", emptyArray())
+        db.delete("ingredients_in_storage", "", emptyArray())
+        db.delete("recipes", "", emptyArray())
+        db.delete("ingredients", "", emptyArray())
+        db.delete("ingredient_types", "", emptyArray())
+
+        initData(db)
     }
 }
