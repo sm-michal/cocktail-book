@@ -6,18 +6,19 @@ import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import com.example.cocktailbook.R
 import com.example.cocktailbook.Ingredient
-import com.example.cocktailbook.db.model.StorageIngredient
-import com.example.cocktailbook.db.model.IngredientType
-import com.example.cocktailbook.db.model.IngredientType.BASE_ALCOHOL
-import com.example.cocktailbook.db.model.IngredientType.JUICE
-import com.example.cocktailbook.db.model.IngredientType.ADDITIONAL
+import com.example.cocktailbook.db.model.*
+import com.example.cocktailbook.db.model.IngredientType.*
 import com.example.cocktailbook.db.model.Recipe
 import com.example.cocktailbook.db.model.RecipeIngredient
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.regex.Pattern
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
-class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 1){
+class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 1){
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("""
             create table  ingredient_types (
@@ -93,6 +94,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             select i.id, i.name, iis.ingredient_id from ingredients i 
             left join ingredients_in_storage iis on i.id = iis.ingredient_id  
             where type = ?
+            order by i.name
             """,
             arrayOf(type.id.toString()))) {
             moveToFirst()
@@ -247,52 +249,7 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             put("name", "Dodatek")
         })
 
-
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Wódka")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Wódka pigwowa")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Wódka śliwkowa")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Wódka wiśniowa")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Rum")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", BASE_ALCOHOL.id)
-            put("name", "Gin")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", JUICE.id)
-            put("name", "Cola")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", JUICE.id)
-            put("name", "Tonik")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", JUICE.id)
-            put("name", "Sok pomarańczowy")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", ADDITIONAL.id)
-            put("name", "Limonka")
-        })
-        db?.insert("ingredients", null, ContentValues().apply {
-            put("type", ADDITIONAL.id)
-            put("name", "Cytryna")
-        })
-
+        readDataFileIngredients(db)
 
         db?.insert("recipes", null, ContentValues().apply {
             put("name", "Cuba Libre")
@@ -411,5 +368,22 @@ class DbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         db.delete("ingredient_types", "", emptyArray())
 
         initData(db)
+    }
+
+    fun readDataFileIngredients(db: SQLiteDatabase?) {
+        with(context.resources.openRawResource(R.raw.ingredients)) {
+            val reader = BufferedReader(InputStreamReader(this))
+
+            val commaPattern = Pattern.compile(",")
+            reader.lines()
+                .map { it.split(commaPattern) }
+                .map { Ingredient(type = Companion.getById(it[0].toInt()), name = it[1]) }
+                .forEach {
+                    db?.insert("ingredients", null, ContentValues().apply {
+                        put("type", it.type.id)
+                        put("name", it.name)
+                    })
+                }
+        }
     }
 }
