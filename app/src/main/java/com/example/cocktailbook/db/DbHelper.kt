@@ -18,7 +18,7 @@ import java.util.regex.Pattern
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
-class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 1){
+class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 1) {
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("""
             create table  ingredient_types (
@@ -135,7 +135,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             while (!isAfterLast) {
                 val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1)
 
-                recipe.ingredients.addAll(loadRecipeIngredients(recipe.id))
+                recipe.ingredients.addAll(loadRecipeIngredients(recipe.id!!))
 
                 result.add(recipe)
 
@@ -250,113 +250,8 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         })
 
         readDataFileIngredients(db)
-
-        db?.insert("recipes", null, ContentValues().apply {
-            put("name", "Cuba Libre")
-            put("description", "Do szklanki z lodem wlewam rum, dopełniam colą i wyciskam sok z dwóch ćwiartek limonki, lekko mieszam")
-        })
-        db?.insert("recipes", null, ContentValues().apply {
-            put("name", "Daiquiri")
-            put("description", "Do szklanicy wlewam rum i sok z limonki, wstrząsam z lodem i odcedzam do schłodzonego kieliszka")
-        })
-        db?.insert("recipes", null, ContentValues().apply {
-            put("name", "November Rain")
-            put("description", "Do szklanki wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję wódkę, lód i dopełniam colą")
-        })
-        db?.insert("recipes", null, ContentValues().apply {
-            put("name", "Łowca Androidów")
-            put("description", "Do szklanki wlewam wódkę, wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję lód i dopełniam tonikiem")
-        })
-        db?.insert("recipes", null, ContentValues().apply {
-            put("name", "Yattaman")
-            put("description", "Do szklanki wlewam wódkę, wyciskam sok z cytryny i wrzucam cytrynę do środka. Dodaję lód i dopełniam colą")
-        })
-
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Cuba Libre", db))
-            put("ingredient_id", getIngredientId("Rum", db))
-            put("quantity", 40)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Cuba Libre", db))
-            put("ingredient_id", getIngredientId("Cola", db))
-            put("quantity", 150)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Cuba Libre", db))
-            put("ingredient_id", getIngredientId("Limonka", db))
-            put("quantity", 0.5)
-            put("unit", "")
-        })
-
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Daiquiri", db))
-            put("ingredient_id", getIngredientId("Rum", db))
-            put("quantity", 80)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Daiquiri", db))
-            put("ingredient_id", getIngredientId("Limonka", db))
-            put("quantity", 1)
-            put("unit", "")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("November Rain", db))
-            put("ingredient_id", getIngredientId("Wódka wiśniowa", db))
-            put("quantity", 50)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("November Rain", db))
-            put("ingredient_id", getIngredientId("Cytryna", db))
-            put("quantity", 0.25)
-            put("unit", "")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("November Rain", db))
-            put("ingredient_id", getIngredientId("Cola", db))
-            put("quantity", 150)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Łowca Androidów", db))
-            put("ingredient_id", getIngredientId("Wódka śliwkowa", db))
-            put("quantity", 70)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Łowca Androidów", db))
-            put("ingredient_id", getIngredientId("Cytryna", db))
-            put("quantity", 0.25)
-            put("unit", "")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Łowca Androidów", db))
-            put("ingredient_id", getIngredientId("Tonik", db))
-            put("quantity", 150)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Yattaman", db))
-            put("ingredient_id", getIngredientId("Wódka pigwowa", db))
-            put("quantity", 50)
-            put("unit", "ml")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Yattaman", db))
-            put("ingredient_id", getIngredientId("Cytryna", db))
-            put("quantity", 0.25)
-            put("unit", "")
-        })
-        db?.insert("recipes_ingredients", null, ContentValues().apply {
-            put("recipe_id", getRecipeId("Yattaman", db))
-            put("ingredient_id", getIngredientId("Cola", db))
-            put("quantity", 150)
-            put("unit", "ml")
-        })
+        readDataFileRecipes(db)
+        readDataFileRecipesIngredients(db)
     }
 
     fun resetDbData() {
@@ -370,7 +265,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         initData(db)
     }
 
-    fun readDataFileIngredients(db: SQLiteDatabase?) {
+    private fun readDataFileIngredients(db: SQLiteDatabase?) {
         with(context.resources.openRawResource(R.raw.ingredients)) {
             val reader = BufferedReader(InputStreamReader(this))
 
@@ -382,6 +277,50 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                     db?.insert("ingredients", null, ContentValues().apply {
                         put("type", it.type.id)
                         put("name", it.name)
+                    })
+                }
+        }
+    }
+
+    private fun readDataFileRecipes(db: SQLiteDatabase?) {
+        with(context.resources.openRawResource(R.raw.recipes)) {
+            val reader = BufferedReader(InputStreamReader(this))
+
+            val semicolonPattern = Pattern.compile(";")
+            reader.lines()
+                .map { it.split(semicolonPattern) }
+                .map { Recipe(name = it[0], description = it[1]) }
+                .forEach {
+                    db?.insert("recipes", null, ContentValues().apply {
+                        put("name", it.name)
+                        put("description", it.description)
+                    })
+                }
+        }
+    }
+
+    private fun readDataFileRecipesIngredients(db: SQLiteDatabase?) {
+        with(context.resources.openRawResource(R.raw.recipes_ingredients)) {
+            val reader = BufferedReader(InputStreamReader(this))
+
+            val commaPattern = Pattern.compile(",")
+            reader.lines()
+                .map { it.split(commaPattern) }
+                .map {
+                    RecipeIngredient(
+                        recipeId = getRecipeId(it[0], db),
+                        ingredientId = getIngredientId(it[1], db),
+                        ingredientName = it[1],
+                        quantity = it[2].toDouble(),
+                        unit = it[3]
+                    )
+                }
+                .forEach {
+                    db?.insert("recipes_ingredients", null, ContentValues().apply {
+                        put("recipe_id", it.recipeId)
+                        put("ingredient_id", it.ingredientId)
+                        put("quantity", it.quantity)
+                        put("unit", it.unit)
                     })
                 }
         }
