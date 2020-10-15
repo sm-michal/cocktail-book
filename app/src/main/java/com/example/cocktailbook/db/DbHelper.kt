@@ -311,7 +311,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         recipeId = getRecipeId(it[0], db),
                         ingredientId = getIngredientId(it[1], db),
                         ingredientName = it[1],
-                        quantity = it[2].toDouble(),
+                        quantity = it[2].let { if (it.trim().isNotEmpty()) it.toDouble() else 1.0 },
                         unit = it[3]
                     )
                 }
