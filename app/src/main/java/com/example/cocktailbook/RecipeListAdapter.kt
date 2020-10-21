@@ -46,6 +46,8 @@ class RecipeListAdapter(
         recipeTitle.text = recipe.name
         if (recipe.available) {
             recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_green_light))
+        } else {
+            recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
         }
 
 
