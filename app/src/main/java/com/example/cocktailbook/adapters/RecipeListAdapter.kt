@@ -1,4 +1,4 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -9,6 +9,7 @@ import android.widget.BaseExpandableListAdapter
 import android.widget.ListView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import com.example.cocktailbook.R
 import com.example.cocktailbook.db.model.Recipe
 
 

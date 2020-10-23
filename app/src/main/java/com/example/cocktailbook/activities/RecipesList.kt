@@ -1,8 +1,10 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ExpandableListView
+import com.example.cocktailbook.R
+import com.example.cocktailbook.adapters.RecipeListAdapter
 import com.example.cocktailbook.db.DbHelper
 import com.example.cocktailbook.db.model.Recipe
 import java.util.stream.IntStream

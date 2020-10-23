@@ -1,41 +1,36 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.cocktailbook.R
 import com.example.cocktailbook.db.DbHelper
 
 class IngredientAdapter(
     private val ingredients: List<Ingredient>,
     context: Context
-) : ArrayAdapter<Ingredient>(context, R.layout.ingredient_layout, ingredients) {
+) : RecyclerView.Adapter<IngredientHolder>() {
 
     private val dbHelper = DbHelper(context)
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var v = convertView
-        val holder: IngredientHolder
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IngredientHolder {
+        val ingredientView = LayoutInflater.from(parent.context)
+            .inflate(R.layout.ingredient_layout, parent, false) as LinearLayout
 
-        if (convertView == null) {
-            val inflater =
-                context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            v = inflater.inflate(R.layout.ingredient_layout, null)
+        val checkBox = ingredientView.findViewById(R.id.ingredientCheckBox) as CheckBox
+        val textView = ingredientView.findViewById(R.id.ingredientName) as TextView
 
-            holder = IngredientHolder(
-                v.findViewById(R.id.ingredientCheckBox) as CheckBox,
-                v.findViewById(R.id.ingredientName) as TextView
-            )
-        } else {
-            holder = convertView.tag as IngredientHolder
-        }
+        return IngredientHolder(checkBox, textView, ingredientView)
+    }
 
+    override fun onBindViewHolder(holder: IngredientHolder, position: Int) {
         val ingredient = ingredients[position]
+
         holder.ingredientCheckBox.isChecked = ingredient.selected
-        holder.ingredientCheckBox.tag = ingredient
         holder.ingredientCheckBox.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked)
                 dbHelper.saveNewIngredientInStorage(ingredient.id)
@@ -43,9 +38,9 @@ class IngredientAdapter(
                 dbHelper.removeFromStorage(ingredient.id)
         }
         holder.ingredientName.text = ingredient.name
-
-        return v!!
     }
+
+    override fun getItemCount(): Int = ingredients.size
 }
 
 data class Ingredient(
@@ -56,5 +51,6 @@ data class Ingredient(
 
 class IngredientHolder(
     val ingredientCheckBox: CheckBox,
-    val ingredientName: TextView
-)
+    val ingredientName: TextView,
+    val parentView: LinearLayout
+): RecyclerView.ViewHolder(parentView)

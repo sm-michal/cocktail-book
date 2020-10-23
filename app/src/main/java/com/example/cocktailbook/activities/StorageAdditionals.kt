@@ -1,7 +1,8 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.activities
 
 import android.content.Intent
 import android.view.View
+import com.example.cocktailbook.R
 import com.example.cocktailbook.db.model.IngredientType
 
 class StorageAdditionals : AbstractStorageActivity(

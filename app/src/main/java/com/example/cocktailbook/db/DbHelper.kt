@@ -6,7 +6,7 @@ import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.cocktailbook.R
-import com.example.cocktailbook.Ingredient
+import com.example.cocktailbook.adapters.Ingredient
 import com.example.cocktailbook.db.model.*
 import com.example.cocktailbook.db.model.IngredientType.*
 import com.example.cocktailbook.db.model.Recipe

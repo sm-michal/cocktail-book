@@ -1,4 +1,4 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.Html
 import android.text.Html.FROM_HTML_MODE_COMPACT
 import android.view.View
+import com.example.cocktailbook.R
 import com.example.cocktailbook.db.DbHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
             .mapValues { (ingredients, recipes) ->
                 "${getString(R.string.buy)} <b>$ingredients</b> ${getString(R.string.toBeAble)}:" +
                         "<ul>" +
-                        recipes.joinToString(prefix = "<li>", separator = "</li><li>", postfix = "</li>") +
+                        recipes.joinToString(prefix = "<li>&nbsp;", separator = "</li><li>&nbsp;", postfix = "</li>") +
                         "</ul>"
             }
             .values.joinToString(separator = "<br>>")

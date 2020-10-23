@@ -10,31 +10,31 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".RecipesList"
-            android:parentActivityName=".MainActivity">
+            android:name=".activities.RecipesList"
+            android:parentActivityName=".activities.MainActivity">
 
         </activity>
         <activity
-            android:name=".StorageAdditionals"
-            android:parentActivityName=".StorageJuices">
+            android:name=".activities.StorageAdditionals"
+            android:parentActivityName=".activities.StorageJuices">
 
         </activity>
         <activity
-            android:name=".StorageJuices"
-            android:parentActivityName=".StorageOtherAlcohols">
+            android:name=".activities.StorageJuices"
+            android:parentActivityName=".activities.StorageOtherAlcohols">
 
         </activity>
         <activity
-            android:name=".StorageOtherAlcohols"
-            android:parentActivityName=".StorageBaseAlcohols">
+            android:name=".activities.StorageOtherAlcohols"
+            android:parentActivityName=".activities.StorageBaseAlcohols">
 
         </activity>
         <activity
-            android:name=".StorageBaseAlcohols"
-            android:parentActivityName=".MainActivity">
+            android:name=".activities.StorageBaseAlcohols"
+            android:parentActivityName=".activities.MainActivity">
 
         </activity>
-        <activity android:name=".MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
