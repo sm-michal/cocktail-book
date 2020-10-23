@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
 import com.example.cocktailbook.R
 import com.example.cocktailbook.Ingredient
 import com.example.cocktailbook.db.model.*
@@ -145,7 +144,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         }
     }
 
-    fun findMostValuableIngredientToBuy() {
+    fun findMostValuableIngredientToBuy(): Map<String, List<String?>> {
         with(readableDatabase.rawQuery("""
             with missing as (
                 select rei.recipe_id, rei.ingredient_id from recipes_ingredients rei
@@ -168,16 +167,18 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         """, emptyArray())) {
             moveToFirst()
 
+            val result = mutableMapOf<String, List<String?>>()
             while (!isAfterLast) {
-                Log.i("DBHELPER", "${getString(0)} ${getLong(1)} ${getString(2)}")
 
                 val ingNames = getString(0).split(",").map { it.toLong() }.map { getIngredientById(it) }.map { it?.name }
                 val recipeNames = getString(2).split(",").map { it.toLong() }.map { getRecipeById(it) }.map { it?.name }
-                Log.i("DBHELPER", "$ingNames $recipeNames")
 
+                result[ingNames.joinToString()] = recipeNames
 
                 moveToNext()
             }
+
+            return result
         }
     }
 

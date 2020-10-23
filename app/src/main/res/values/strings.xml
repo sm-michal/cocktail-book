@@ -13,4 +13,7 @@
     <string name="recipesList">Przepisy</string>
     <string name="initDb">Odśwież bazę</string>
     <string name="what_to_buy">Co kupić?</string>
+    <string name="buy">Kup</string>
+    <string name="toBeAble">aby zrobić</string>
+    <string name="ok">OK</string>
 </resources>
