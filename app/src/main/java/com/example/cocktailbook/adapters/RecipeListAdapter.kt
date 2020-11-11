@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.cocktailbook.R
 import com.example.cocktailbook.db.model.Recipe
+import java.util.*
 
 
 class RecipeListAdapter(
@@ -51,6 +52,11 @@ class RecipeListAdapter(
             recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
         }
 
+
+        val imageResource = context.resources.getIdentifier(
+            recipe.glassType.toString().toLowerCase(Locale.getDefault()),
+            "drawable", context.packageName)
+        recipeTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, imageResource, 0)
 
         return view!!
     }

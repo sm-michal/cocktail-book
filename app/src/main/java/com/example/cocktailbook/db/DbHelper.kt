@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
-class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 1) {
+class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 2) {
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("""
             create table  ingredient_types (
@@ -39,7 +39,8 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             create table recipes (
                 id integer primary key autoincrement,
                 name text,
-                description text
+                description text,
+                glass_type text
             )    
         """
         )
@@ -80,7 +81,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("drop table recipe_ingredients")
+        db?.execSQL("drop table recipes_ingredients")
         db?.execSQL("drop table recipes")
         db?.execSQL("drop table ingredients_in_storage")
         db?.execSQL("drop table ingredients")
@@ -120,7 +121,8 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                 )
             )
             select r.id, r.name, r.description, 
-            case when recipe_id is not null then 1 else 0 end is_available
+            case when recipe_id is not null then 1 else 0 end is_available,
+            r.glass_type
             from recipes r
             left join available on r.id = available.recipe_id
             order by is_available desc, r.name
@@ -132,7 +134,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
             val result = arrayListOf<Recipe>()
             while (!isAfterLast) {
-                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1)
+                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1, enumValueOf(getString(4)))
 
                 recipe.ingredients.addAll(loadRecipeIngredients(recipe.id!!))
 
@@ -200,11 +202,11 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     private fun getRecipeById(recipeId: Long): Recipe? {
-        with(readableDatabase.query("recipes", arrayOf("id", "name", "description"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
+        with(readableDatabase.query("recipes", arrayOf("id", "name", "description", "glass_type"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
             moveToFirst()
 
             return if (!isAfterLast)
-                 Recipe(getLong(0), getString(1), getString(2), false, mutableListOf())
+                 Recipe(getLong(0), getString(1), getString(2), false, enumValueOf(getString(3)), mutableListOf())
             else
                 null
 
@@ -290,11 +292,12 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             val semicolonPattern = Pattern.compile(";")
             reader.lines()
                 .map { it.split(semicolonPattern) }
-                .map { Recipe(name = it[0], description = it[1]) }
+                .map { Recipe(name = it[0], description = it[1], glassType = enumValueOf(it[2])) }
                 .forEach {
                     db?.insert("recipes", null, ContentValues().apply {
                         put("name", it.name)
                         put("description", it.description)
+                        put("glass_type", it.glassType.toString())
                     })
                 }
         }

@@ -5,5 +5,10 @@ data class Recipe (
     val name: String,
     val description: String,
     val available: Boolean = false,
+    val glassType: GlassType,
     val ingredients: MutableList<RecipeIngredient> = arrayListOf()
 )
+
+enum class GlassType {
+    SHOT, MARTINI, HURRICANE, LOW, HIGH, WINE
+}

@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktailbook.adapters.Ingredient
 import com.example.cocktailbook.adapters.IngredientAdapter
-import com.example.cocktailbook.adapters.IngredientHolder
 import com.example.cocktailbook.R
 import com.example.cocktailbook.db.DbHelper
 import com.example.cocktailbook.db.model.IngredientType
@@ -17,7 +16,6 @@ abstract class AbstractStorageActivity(
     private val ingredientType: IngredientType
 ) : AppCompatActivity() {
     private lateinit var recyclerView : RecyclerView
-    private lateinit var viewAdapter: RecyclerView.Adapter<IngredientHolder>
     private lateinit var viewManager: RecyclerView.LayoutManager
 
     private lateinit var dbHelper: DbHelper
@@ -43,6 +41,6 @@ abstract class AbstractStorageActivity(
 
     private fun loadIngredients() =
         dbHelper.getAllIngredientsByType(ingredientType)
-            .map { it -> Ingredient(it.id, it.name, it.inStorage) }
+            .map { Ingredient(it.id, it.name, it.inStorage) }
 
 }
