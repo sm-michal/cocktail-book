@@ -2,6 +2,7 @@ package com.example.cocktailbook.db
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -101,7 +102,11 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
             val result = ArrayList<StorageIngredient>()
             while (!isAfterLast) {
-                result.add(StorageIngredient(getLong(0), type, getString(1), getString(2) != null))
+                result.add(StorageIngredient(
+                    id = getLong(0),
+                    type = type,
+                    name = getString(1),
+                    inStorage = getString(2) != null))
                 moveToNext()
             }
             return result
@@ -134,7 +139,12 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
             val result = arrayListOf<Recipe>()
             while (!isAfterLast) {
-                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1, enumValueOf(getString(4)))
+                val recipe = Recipe(
+                    id = getLong(0),
+                    name = getString(1),
+                    description = getString(2),
+                    available = getInt(3) == 1,
+                    glassType = enumValueOf(getString(4)))
 
                 recipe.ingredients.addAll(loadRecipeIngredients(recipe.id!!))
 
@@ -194,7 +204,12 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
             val result = arrayListOf<RecipeIngredient>()
             while (!isAfterLast) {
-                result.add(RecipeIngredient(recipeId, getLong(0), getString(1), getDouble(2), getString(3)))
+                result.add(RecipeIngredient(
+                    recipeId = recipeId,
+                    ingredientId = getLong(0),
+                    ingredientName = getString(1),
+                    quantity = getDouble(2),
+                    unit = getString(3)))
                 moveToNext()
             }
             return result
@@ -202,11 +217,17 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     private fun getRecipeById(recipeId: Long): Recipe? {
-        with(readableDatabase.query("recipes", arrayOf("id", "name", "description", "glass_type"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
+        with(readableDatabase.queryById("recipes", arrayOf("id", "name", "description", "glass_type"), "id = ?", recipeId)) {
             moveToFirst()
 
             return if (!isAfterLast)
-                 Recipe(getLong(0), getString(1), getString(2), false, enumValueOf(getString(3)), mutableListOf())
+                 Recipe(
+                     id = getLong(0),
+                     name = getString(1),
+                     description = getString(2),
+                     available = false,
+                     glassType = enumValueOf(getString(3)),
+                     ingredients = mutableListOf())
             else
                 null
 
@@ -214,7 +235,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     private fun getIngredientById(ingredientId: Long): IngredientDto? {
-        with(readableDatabase.query("ingredients", arrayOf("id", "name"), "id = ?", arrayOf(ingredientId.toString()), null, null, null)) {
+        with(readableDatabase.queryById("ingredients", arrayOf("id", "name"), "id = ?", ingredientId)) {
             moveToFirst()
 
             return if (!isAfterLast)
@@ -224,33 +245,40 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     fun saveNewIngredientInStorage(ingredientId: Long) {
-        writableDatabase.insert("ingredients_in_storage", null, ContentValues().apply {
-            put("ingredient_id", ingredientId)
-        })
+        writableDatabase.insert(
+            "ingredients_in_storage",
+            mapOf(
+                "ingredient_id" to ingredientId
+            )
+        )
     }
 
     fun removeFromStorage(ingredientId: Long) {
-        writableDatabase.delete("ingredients_in_storage", "ingredient_id = ?", arrayOf(ingredientId.toString()))
+        writableDatabase.delete(
+            "ingredients_in_storage",
+            "ingredient_id = ?",
+            arrayOf(ingredientId.toString())
+        )
     }
 
     private fun initData(db: SQLiteDatabase?) {
         // some init data
-        db?.insert("ingredient_types", null, ContentValues().apply {
-            put("id", 1)
-            put("name", "Alkohol bazowy")
-        })
-        db?.insert("ingredient_types", null, ContentValues().apply {
-            put("id", 2)
-            put("name", "Likier")
-        })
-        db?.insert("ingredient_types", null, ContentValues().apply {
-            put("id", "3")
-            put("name", "Sok")
-        })
-        db?.insert("ingredient_types", null, ContentValues().apply {
-            put("id", "4")
-            put("name", "Dodatek")
-        })
+        db?.insert("ingredient_types", mapOf(
+            "id" to 1,
+            "name" to "Alkohol bazowy"
+        ))
+        db?.insert("ingredient_types", mapOf(
+            "id" to 2,
+            "name" to "Likier"
+        ))
+        db?.insert("ingredient_types", mapOf(
+            "id" to 3,
+            "name" to "Sok"
+        ))
+        db?.insert("ingredient_types", mapOf(
+            "id" to 4,
+            "name" to "Dodatek"
+        ))
 
         readDataFileIngredients(db)
         readDataFileRecipes(db)
@@ -315,7 +343,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         recipeId = getRecipeId(it[0], db),
                         ingredientId = getIngredientId(it[1], db),
                         ingredientName = it[1],
-                        quantity = it[2].let { if (it.trim().isNotEmpty()) it.toDouble() else 1.0 },
+                        quantity = it[2].let { str -> if (str.trim().isNotEmpty()) str.toDouble() else 1.0 },
                         unit = it[3]
                     )
                 }
@@ -330,3 +358,16 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         }
     }
 }
+
+fun SQLiteDatabase.queryById(table: String, columns: Array<String>, whereClause: String, idValue: Long ): Cursor =
+    query(table, columns, whereClause, arrayOf(idValue.toString()), null, null, null)
+
+fun SQLiteDatabase.insert(table: String, values: Map<String, Any>) =
+    insert(table, null, ContentValues().apply {
+        values.forEach {(key, value) ->
+            if (value is String)
+                this.put(key, value)
+            else if (value is Int)
+                this.put(key, value)
+        }
+    })

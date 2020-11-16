@@ -25,9 +25,11 @@ class RecipesList : AppCompatActivity() {
 
         lv.setAdapter(RecipeListAdapter(applicationContext, loadRecipes()))
         lv.setOnGroupExpandListener { groupPosition ->
-            IntStream.range(0, lv.adapter.count).filter { it != groupPosition }.forEach {
-                lv.collapseGroup(it)
-            }
+            IntStream.range(0, lv.adapter.count)
+                .filter { it != groupPosition }
+                .forEach {
+                    lv.collapseGroup(it)
+                }
         }
     }
 
