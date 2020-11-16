@@ -8,6 +8,7 @@
         android:id="@+id/recipeIngredients"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:layout_marginBottom="5dp"
         android:divider="@null"
         android:dividerHeight="0dp">
@@ -17,6 +18,8 @@
         android:id="@+id/recipeContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp">
 
     </TextView>
