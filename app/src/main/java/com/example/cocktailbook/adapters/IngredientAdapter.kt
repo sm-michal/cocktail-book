@@ -11,7 +11,7 @@ import com.example.cocktailbook.R
 import com.example.cocktailbook.db.DbHelper
 
 class IngredientAdapter(
-    private val ingredients: List<Ingredient>,
+    private val ingredients: List<IngredientDto>,
     context: Context
 ) : RecyclerView.Adapter<IngredientHolder>() {
 
@@ -43,7 +43,7 @@ class IngredientAdapter(
     override fun getItemCount(): Int = ingredients.size
 }
 
-data class Ingredient(
+data class IngredientDto(
     val id: Long,
     val name: String,
     var selected: Boolean
@@ -52,5 +52,5 @@ data class Ingredient(
 class IngredientHolder(
     val ingredientCheckBox: CheckBox,
     val ingredientName: TextView,
-    val parentView: LinearLayout
+    parentView: LinearLayout
 ): RecyclerView.ViewHolder(parentView)

@@ -6,7 +6,7 @@ import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.cocktailbook.R
-import com.example.cocktailbook.adapters.Ingredient
+import com.example.cocktailbook.adapters.IngredientDto
 import com.example.cocktailbook.db.model.*
 import com.example.cocktailbook.db.model.IngredientType.*
 import com.example.cocktailbook.db.model.Recipe
@@ -213,12 +213,12 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         }
     }
 
-    private fun getIngredientById(ingredientId: Long): Ingredient? {
+    private fun getIngredientById(ingredientId: Long): IngredientDto? {
         with(readableDatabase.query("ingredients", arrayOf("id", "name"), "id = ?", arrayOf(ingredientId.toString()), null, null, null)) {
             moveToFirst()
 
             return if (!isAfterLast)
-                Ingredient(getLong(0), getString(1), false)
+                IngredientDto(getLong(0), getString(1), false)
             else null
         }
     }

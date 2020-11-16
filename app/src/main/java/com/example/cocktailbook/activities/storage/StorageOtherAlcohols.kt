@@ -1,4 +1,4 @@
-package com.example.cocktailbook.activities
+package com.example.cocktailbook.activities.storage
 
 import android.content.Intent
 import android.view.View

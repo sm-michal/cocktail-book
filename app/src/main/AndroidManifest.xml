@@ -15,22 +15,22 @@
 
         </activity>
         <activity
-            android:name=".activities.StorageAdditionals"
-            android:parentActivityName=".activities.StorageJuices">
+            android:name=".activities.storage.StorageAdditionals"
+            android:parentActivityName=".activities.storage.StorageJuices">
 
         </activity>
         <activity
-            android:name=".activities.StorageJuices"
-            android:parentActivityName=".activities.StorageOtherAlcohols">
+            android:name=".activities.storage.StorageJuices"
+            android:parentActivityName=".activities.storage.StorageOtherAlcohols">
 
         </activity>
         <activity
-            android:name=".activities.StorageOtherAlcohols"
-            android:parentActivityName=".activities.StorageBaseAlcohols">
+            android:name=".activities.storage.StorageOtherAlcohols"
+            android:parentActivityName=".activities.storage.StorageBaseAlcohols">
 
         </activity>
         <activity
-            android:name=".activities.StorageBaseAlcohols"
+            android:name=".activities.storage.StorageBaseAlcohols"
             android:parentActivityName=".activities.MainActivity">
 
         </activity>

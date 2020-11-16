@@ -1,10 +1,10 @@
-package com.example.cocktailbook.activities
+package com.example.cocktailbook.activities.storage
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cocktailbook.adapters.Ingredient
+import com.example.cocktailbook.adapters.IngredientDto
 import com.example.cocktailbook.adapters.IngredientAdapter
 import com.example.cocktailbook.R
 import com.example.cocktailbook.db.DbHelper
@@ -41,6 +41,6 @@ abstract class AbstractStorageActivity(
 
     private fun loadIngredients() =
         dbHelper.getAllIngredientsByType(ingredientType)
-            .map { Ingredient(it.id, it.name, it.inStorage) }
+            .map { IngredientDto(it.id, it.name, it.inStorage) }
 
 }

@@ -7,6 +7,7 @@ import android.text.Html
 import android.text.Html.FROM_HTML_MODE_COMPACT
 import android.view.View
 import com.example.cocktailbook.R
+import com.example.cocktailbook.activities.storage.StorageBaseAlcohols
 import com.example.cocktailbook.db.DbHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 

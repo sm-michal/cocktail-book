@@ -10,8 +10,10 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.cocktailbook.R
+import com.example.cocktailbook.db.model.GlassType
 import com.example.cocktailbook.db.model.Recipe
 import java.util.*
+import kotlin.math.roundToInt
 
 
 class RecipeListAdapter(
@@ -43,22 +45,21 @@ class RecipeListAdapter(
             view = layoutInflater.inflate(R.layout.recipe_title_layout, null)
         }
 
-        val recipeTitle = view!!.findViewById(R.id.recipeTitle) as TextView
         val recipe = getGroup(groupPosition)
+        val recipeTitle = view!!.findViewById(R.id.recipeTitle) as TextView
         recipeTitle.text = recipe.name
-        if (recipe.available) {
-            recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.holo_green_light))
-        } else {
-            recipeTitle.setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
-        }
+        recipeTitle.setRecipeGlassIcon(recipe.glassType)
+        recipeTitle.setBackgroundColor(
+            ContextCompat.getColor(
+                context,
+                if (recipe.available)
+                    android.R.color.holo_green_light
+                else
+                    android.R.color.white
+            )
+        )
 
-
-        val imageResource = context.resources.getIdentifier(
-            recipe.glassType.toString().toLowerCase(Locale.getDefault()),
-            "drawable", context.packageName)
-        recipeTitle.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, imageResource, 0)
-
-        return view!!
+        return view
     }
 
     override fun getChildrenCount(groupPosition: Int): Int = 1
@@ -88,14 +89,12 @@ class RecipeListAdapter(
         val recipeText = view!!.findViewById(R.id.recipeContent) as TextView
         recipeText.text = recipeContent.description
 
-        val ingredientList = view!!.findViewById(R.id.recipeIngredients) as ListView
+        val ingredientList = view.findViewById(R.id.recipeIngredients) as ListView
         ingredientList.layoutParams.height = recipeContent.ingredients.size * 60
         ingredientList.adapter = ArrayAdapter<String>(context, R.layout.recipe_ingredient,
             recipeContent.ingredients.map { it.toString() })
 
-
-
-        return view!!
+        return view
     }
 
     override fun getChildId(groupPosition: Int, childPosition: Int): Long =
@@ -123,8 +122,19 @@ data class RecipeContent (
 
 fun Recipe.toRecipeContent() =
     RecipeContent(
-        ingredients.map { it ->
-            RecipeIngredientDto(it.quantity, it.unit, it.ingredientName)
-        }.toMutableList(),
+        ingredients
+            .map { RecipeIngredientDto(it.quantity, it.unit, it.ingredientName) }
+            .toMutableList(),
         description
     )
+
+fun TextView.setRecipeGlassIcon(glassType: GlassType) {
+    val imageResource = context.resources.getIdentifier(
+        glassType.toString().toLowerCase(Locale.getDefault()),
+        "drawable", context.packageName)
+    val scaledDrawable = ContextCompat.getDrawable(context, imageResource)
+    val pixelDrawableSize = (lineHeight * 0.9).roundToInt()
+    scaledDrawable?.setBounds(0, 0, pixelDrawableSize, pixelDrawableSize)
+
+    setCompoundDrawables(null, null, scaledDrawable, null)
+}
