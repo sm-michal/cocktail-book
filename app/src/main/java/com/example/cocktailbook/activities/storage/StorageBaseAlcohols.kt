@@ -1,7 +1,8 @@
-package com.example.cocktailbook
+package com.example.cocktailbook.activities.storage
 
 import android.content.Intent
 import android.view.View
+import com.example.cocktailbook.R
 import com.example.cocktailbook.db.model.IngredientType
 
 class StorageBaseAlcohols : AbstractStorageActivity(
@@ -11,7 +12,7 @@ class StorageBaseAlcohols : AbstractStorageActivity(
 ) {
 
     fun openOtherAlcohols(view: View) {
-        startActivity(Intent(this, OtherAlcohols::class.java))
+        startActivity(Intent(this, StorageOtherAlcohols::class.java))
     }
 }
 
