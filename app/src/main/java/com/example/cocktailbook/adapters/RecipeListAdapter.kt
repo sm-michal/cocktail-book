@@ -130,7 +130,7 @@ fun Recipe.toRecipeContent() =
 
 fun TextView.setRecipeGlassIcon(glassType: GlassType) {
     val imageResource = context.resources.getIdentifier(
-        glassType.toString().toLowerCase(Locale.getDefault()),
+        glassType.toString().lowercase(),
         "drawable", context.packageName)
     val scaledDrawable = ContextCompat.getDrawable(context, imageResource)
     val pixelDrawableSize = (lineHeight * 0.9).roundToInt()
