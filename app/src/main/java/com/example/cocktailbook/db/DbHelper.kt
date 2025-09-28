@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 
 const val DATABASE_NAME = "CocktailRecipesDb"
 
-class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 2) {
+class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 3) {
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("""
             create table  ingredient_types (
@@ -40,7 +40,8 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                 id integer primary key autoincrement,
                 name text,
                 description text,
-                glass_type text
+                glass_type text,
+                is_deleted integer not null default 0
             )    
         """
         )
@@ -122,9 +123,11 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             )
             select r.id, r.name, r.description,
             case when recipe_id is not null then 1 else 0 end is_available,
-            r.glass_type
+            r.glass_type,
+            r.is_deleted
             from recipes r
             left join available on r.id = available.recipe_id
+            where r.is_deleted = 0
             order by is_available desc, r.name
         """, emptyArray()
             )
@@ -134,7 +137,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
             val result = arrayListOf<Recipe>()
             while (!isAfterLast) {
-                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1, enumValueOf(getString(4)))
+                val recipe = Recipe(getLong(0), getString(1), getString(2), getInt(3) == 1, enumValueOf(getString(4)), isDeleted = getInt(5) == 1)
 
                 recipe.ingredients.addAll(loadRecipeIngredients(recipe.id!!))
 
@@ -202,11 +205,11 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     }
 
     private fun getRecipeById(recipeId: Long): Recipe? {
-        with(readableDatabase.query("recipes", arrayOf("id", "name", "description", "glass_type"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
+        with(readableDatabase.query("recipes", arrayOf("id", "name", "description", "glass_type", "is_deleted"), "id = ?", arrayOf(recipeId.toString()), null, null, null)) {
             moveToFirst()
 
             return if (!isAfterLast)
-                 Recipe(getLong(0), getString(1), getString(2), false, enumValueOf(getString(3)), mutableListOf())
+                 Recipe(getLong(0), getString(1), getString(2), false, enumValueOf(getString(3)), mutableListOf(), getInt(4) == 1)
             else
                 null
 
@@ -238,6 +241,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             put("name", recipe.name)
             put("description", recipe.description)
             put("glass_type", recipe.glassType.name)
+            put("is_deleted", if (recipe.isDeleted) 1 else 0)
         })
 
         recipe.ingredients.forEach {
@@ -248,6 +252,12 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                 put("unit", it.unit)
             })
         }
+    }
+
+    fun deleteRecipe(recipeId: Long) {
+        writableDatabase.update("recipes", ContentValues().apply {
+            put("is_deleted", 1)
+        }, "id = ?", arrayOf(recipeId.toString()))
     }
 
     fun getAllIngredients(): List<Ingredient> {
@@ -328,6 +338,7 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
                         put("name", it.name)
                         put("description", it.description)
                         put("glass_type", it.glassType.toString())
+                        put("is_deleted", 0)
                     })
                 }
         }

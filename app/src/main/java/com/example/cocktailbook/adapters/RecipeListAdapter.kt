@@ -1,11 +1,13 @@
 package com.example.cocktailbook.adapters
 
+import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.BaseExpandableListAdapter
+import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -18,7 +20,8 @@ import kotlin.math.roundToInt
 
 class RecipeListAdapter(
     private val context: Context,
-    private val titles: List<Recipe>
+    private var titles: List<Recipe>,
+    private val onDeleteCallback: (Long) -> Unit
 ) : BaseExpandableListAdapter() {
 
     override fun getGroup(groupPosition: Int): Recipe =
@@ -59,7 +62,26 @@ class RecipeListAdapter(
             )
         )
 
+        val deleteIcon = view.findViewById<ImageView>(R.id.delete_recipe_icon)
+        deleteIcon.setOnClickListener {
+            AlertDialog.Builder(parent?.context)
+                .setTitle("Delete Recipe")
+                .setMessage("Are you sure you want to delete this recipe?")
+                .setPositiveButton(android.R.string.yes) { _, _ ->
+                    recipe.id?.let { id ->
+                        onDeleteCallback(id)
+                    }
+                }
+                .setNegativeButton(android.R.string.no, null)
+                .show()
+        }
+
         return view
+    }
+
+    fun updateData(newTitles: List<Recipe>) {
+        this.titles = newTitles
+        notifyDataSetChanged()
     }
 
     override fun getChildrenCount(groupPosition: Int): Int = 1

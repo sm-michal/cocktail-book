@@ -12,6 +12,7 @@ import java.util.stream.IntStream
 class RecipesList : AppCompatActivity() {
 
     private lateinit var dbHelper: DbHelper
+    private lateinit var recipeListAdapter: RecipeListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +24,13 @@ class RecipesList : AppCompatActivity() {
 
         dbHelper = DbHelper(applicationContext)
 
-        lv.setAdapter(RecipeListAdapter(applicationContext, loadRecipes()))
+        recipeListAdapter = RecipeListAdapter(this, loadRecipes()) { recipeId ->
+            dbHelper.deleteRecipe(recipeId)
+            val updatedRecipes = loadRecipes()
+            recipeListAdapter.updateData(updatedRecipes)
+        }
+
+        lv.setAdapter(recipeListAdapter)
         lv.setOnGroupExpandListener { groupPosition ->
             IntStream.range(0, lv.adapter.count).filter { it != groupPosition }.forEach {
                 lv.collapseGroup(it)
