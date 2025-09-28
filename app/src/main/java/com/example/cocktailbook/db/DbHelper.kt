@@ -108,6 +108,10 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
         }
     }
 
+    fun getRecipesForExport() = readableDatabase.rawQuery("select * from recipes", null)
+
+    fun getRecipesIngredientsForExport() = readableDatabase.rawQuery("select * from recipes_ingredients", null)
+
     fun getRecipes(): List<Recipe> {
         with(readableDatabase.rawQuery("""
             with available as (

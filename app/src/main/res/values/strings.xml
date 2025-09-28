@@ -17,4 +17,5 @@
     <string name="toBeAble">aby zrobić</string>
     <string name="ok">OK</string>
     <string name="icon_desc">Ikona drinka</string>
+    <string name="export_db">Export DB</string>
 </resources>
