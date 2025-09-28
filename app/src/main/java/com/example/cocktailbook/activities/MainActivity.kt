@@ -49,4 +49,8 @@ class MainActivity : AppCompatActivity() {
 
             .show()
     }
+
+    fun createRecipe(view: View) {
+        startActivity(Intent(this, CreateRecipeActivity::class.java))
+    }
 }

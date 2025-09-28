@@ -111,16 +111,16 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
     fun getRecipes(): List<Recipe> {
         with(readableDatabase.rawQuery("""
             with available as (
-                select distinct ri.recipe_id from recipes_ingredients ri 
+                select distinct ri.recipe_id from recipes_ingredients ri
                 join ingredients_in_storage si on ri.ingredient_id = si.ingredient_id
                 where not exists (
-                    select 1 from recipes_ingredients rei 
+                    select 1 from recipes_ingredients rei
                     where rei.recipe_id = ri.recipe_id and rei.ingredient_id not in (
                         select ingredient_id from ingredients_in_storage
-                    ) 
+                    )
                 )
             )
-            select r.id, r.name, r.description, 
+            select r.id, r.name, r.description,
             case when recipe_id is not null then 1 else 0 end is_available,
             r.glass_type
             from recipes r
@@ -156,15 +156,15 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
             grouped as (
                 select recipe_id, count(ingredient_id) as count_missing, group_concat(ingredient_id) as ing_ids from missing
                 group by recipe_id
-                order by 2      
+                order by 2
             ),
             min_missing as (
-                select ing_ids, count(recipe_id) as avail_recipes_count, group_concat(recipe_id) as recipes from grouped 
+                select ing_ids, count(recipe_id) as avail_recipes_count, group_concat(recipe_id) as recipes from grouped
                 where count_missing = (select min(count_missing) from grouped)
                 group by ing_ids
                 order by 2 desc
             )
-            select ing_ids, avail_recipes_count, recipes from min_missing 
+            select ing_ids, avail_recipes_count, recipes from min_missing
             where avail_recipes_count = (select max(avail_recipes_count) from min_missing)
         """, emptyArray())) {
             moveToFirst()
@@ -231,6 +231,36 @@ class DbHelper(val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, 
 
     fun removeFromStorage(ingredientId: Long) {
         writableDatabase.delete("ingredients_in_storage", "ingredient_id = ?", arrayOf(ingredientId.toString()))
+    }
+
+    fun saveRecipe(recipe: Recipe) {
+        val recipeId = writableDatabase.insert("recipes", null, ContentValues().apply {
+            put("name", recipe.name)
+            put("description", recipe.description)
+            put("glass_type", recipe.glassType.name)
+        })
+
+        recipe.ingredients.forEach {
+            writableDatabase.insert("recipes_ingredients", null, ContentValues().apply {
+                put("recipe_id", recipeId)
+                put("ingredient_id", it.ingredientId)
+                put("quantity", it.quantity)
+                put("unit", it.unit)
+            })
+        }
+    }
+
+    fun getAllIngredients(): List<Ingredient> {
+        with(readableDatabase.rawQuery("select id, name, type from ingredients order by name", emptyArray())) {
+            moveToFirst()
+
+            val result = ArrayList<Ingredient>()
+            while (!isAfterLast) {
+                result.add(Ingredient(getLong(0), IngredientType.Companion.getById(getInt(2)), getString(1)))
+                moveToNext()
+            }
+            return result
+        }
     }
 
     private fun initData(db: SQLiteDatabase?) {
