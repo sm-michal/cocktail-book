@@ -6,7 +6,8 @@ data class Recipe (
     val description: String,
     val available: Boolean = false,
     val glassType: GlassType,
-    val ingredients: MutableList<RecipeIngredient> = arrayListOf()
+    val ingredients: MutableList<RecipeIngredient> = arrayListOf(),
+    val isDeleted: Boolean = false
 )
 
 enum class GlassType {
